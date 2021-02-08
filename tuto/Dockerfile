@@ -32,19 +32,22 @@ RUN service mysql start && mariadb -e "CREATE DATABASE wordpress DEFAULT CHARACT
 RUN service mysql start && mariadb -e "CREATE DATABASE phpmyadmin; FLUSH PRIVILEGES;"
     #create a db for phpmyadmin
 COPY srcs/create_tables.sql .
-RUN service mysql start && mysql < create_tables.sql && rm -f create_tables.sql
+COPY srcs/wordpress.sql .
+RUN service mysql start && mysql < create_tables.sql && rm -f create_tables.sql && mysql < wordpress.sql && rm -f wordpress.sql 
     #create a user for phpmyadmin and wordpress
 RUN service mysql start && mariadb -e "GRANT ALL ON wordpress.* TO 'admin'@'localhost' IDENTIFIED BY 'admin' WITH GRANT OPTION; ALTER USER 'root'@'localhost'; FLUSH PRIVILEGES;"
 RUN service mysql start && mariadb -e "GRANT ALL ON phpmyadmin.* TO 'admin'@'localhost' IDENTIFIED BY 'admin' WITH GRANT OPTION; ALTER USER 'root'@'localhost'; FLUSH PRIVILEGES;"
 
 #set up wordpress
     #install
-RUN wget https://wordpress.org/latest.tar.gz
-RUN tar -xvzf latest.tar.gz && rm -rf latest.tar.gz
-RUN mv wordpress /var/www/html
+# RUN wget https://wordpress.org/latest.tar.gz
+# RUN tar -xvzf latest.tar.gz && rm -rf latest.tar.gz
+# RUN mv wordpress/* /var/www/html/.
 #COPY srcs/wordpress /var/www/html/wordpress
 #COPY srcs/wlwmanifest.xml /var/www/html/wordpress/wp-includes/
-COPY ./srcs/wp-config.php /var/www/html/wordpress
+COPY ./srcs/wordpress.tar /var/www/html/
+RUN rm -rf /var/www/html/index.nginx-debian.html && cd /var/www/html && tar -xvf wordpress.tar
+# COPY ./srcs/wp-config.php /var/www/html/wordpress
 
 #lauching services
 ENTRYPOINT service nginx start && service mysql start && service php7.3-fpm start && bash
