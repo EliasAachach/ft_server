@@ -9,7 +9,7 @@ RUN apt -y update
 RUN apt -y install mariadb-server
 RUN apt -y install wget
 RUN apt -y install nginx
-RUN apt -y install php7.3 php7.3-fpm php7.3-mysql php-common php7.3-cli php7.3-common php7.3-json php7.3-opcache php7.3-readline php-mbstring
+RUN apt -y install php7.3 php7.3-fpm php7.3-mysql php-common php7.3-cli php7.3-common php7.3-json php7.3-opcache php7.3-readline php-curl php-gd php-intl php-mbstring php-soap php-xml php-xmlrpc php-zip
 
 #set up nginx
 COPY srcs/default /etc/nginx/sites-enabled/default
@@ -28,9 +28,23 @@ RUN chown -R www-data:www-data /var/www/html/phpmyadmin
 
 #set up mariadb
     #create a db for wordpress
-RUN service mysql start && mariadb -e "CREATE DATABASE wordpress; FLUSH PRIVILEGES;"
+RUN service mysql start && mariadb -e "CREATE DATABASE wordpress DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci; FLUSH PRIVILEGES;"
+RUN service mysql start && mariadb -e "CREATE DATABASE phpmyadmin; FLUSH PRIVILEGES;"
+    #create a db for phpmyadmin
+COPY srcs/create_tables.sql .
+RUN service mysql start && mysql < create_tables.sql && rm -f create_tables.sql
     #create a user for phpmyadmin and wordpress
-RUN service mysql start && mariadb -e "GRANT ALL ON wordpress.* TO 'admin'@'localhost' IDENTIFIED BY 'admin' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+RUN service mysql start && mariadb -e "GRANT ALL ON wordpress.* TO 'admin'@'localhost' IDENTIFIED BY 'admin' WITH GRANT OPTION; ALTER USER 'root'@'localhost'; FLUSH PRIVILEGES;"
+RUN service mysql start && mariadb -e "GRANT ALL ON phpmyadmin.* TO 'admin'@'localhost' IDENTIFIED BY 'admin' WITH GRANT OPTION; ALTER USER 'root'@'localhost'; FLUSH PRIVILEGES;"
+
+#set up wordpress
+    #install
+RUN wget https://wordpress.org/latest.tar.gz
+RUN tar -xvzf latest.tar.gz && rm -rf latest.tar.gz
+RUN mv wordpress /var/www/html
+#COPY srcs/wordpress /var/www/html/wordpress
+#COPY srcs/wlwmanifest.xml /var/www/html/wordpress/wp-includes/
+COPY ./srcs/wp-config.php /var/www/html/wordpress
 
 #lauching services
 ENTRYPOINT service nginx start && service mysql start && service php7.3-fpm start && bash
