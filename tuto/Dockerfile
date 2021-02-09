@@ -39,15 +39,10 @@ RUN service mysql start && mariadb -e "GRANT ALL ON wordpress.* TO 'admin'@'loca
 RUN service mysql start && mariadb -e "GRANT ALL ON phpmyadmin.* TO 'admin'@'localhost' IDENTIFIED BY 'admin' WITH GRANT OPTION; ALTER USER 'root'@'localhost'; FLUSH PRIVILEGES;"
 
 #set up wordpress
-    #install
-# RUN wget https://wordpress.org/latest.tar.gz
-# RUN tar -xvzf latest.tar.gz && rm -rf latest.tar.gz
-# RUN mv wordpress/* /var/www/html/.
-#COPY srcs/wordpress /var/www/html/wordpress
-#COPY srcs/wlwmanifest.xml /var/www/html/wordpress/wp-includes/
 COPY ./srcs/wordpress.tar /var/www/html/
-RUN rm -rf /var/www/html/index.nginx-debian.html && cd /var/www/html && tar -xvf wordpress.tar
-# COPY ./srcs/wp-config.php /var/www/html/wordpress
+RUN rm -rf /var/www/html/index.nginx-debian.html && cd /var/www/html && tar -xvf wordpress.tar && rm wordpress.tar
 
 #lauching services
 ENTRYPOINT service nginx start && service mysql start && service php7.3-fpm start && bash
+
+#logs : phpmyadmin ==> admin:admin wordpress ==> toto:totolandisverygoodcountry
