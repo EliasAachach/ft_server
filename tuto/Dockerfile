@@ -6,8 +6,9 @@ LABEL elaachac <elaachac@student.42.fr>
 
 #update & install packages
 RUN apt -y update
-RUN apt -y install mariadb-server
 RUN apt -y install wget
+RUN apt -y install gettext-base
+RUN apt -y install mariadb-server
 RUN apt -y install nginx
 RUN apt -y install php7.3 php7.3-fpm php7.3-mysql php-common php7.3-cli php7.3-common php7.3-json php7.3-opcache php7.3-readline php-curl php-gd php-intl php-mbstring php-soap php-xml php-xmlrpc php-zip
 
@@ -45,6 +46,10 @@ RUN service mysql start && mariadb -e "GRANT ALL ON phpmyadmin.* TO 'admin'@'loc
 #set up wordpress
 COPY ./srcs/wordpress.tar /var/www/html/
 RUN rm -rf /var/www/html/index.nginx-debian.html && cd /var/www/html && tar -xvf wordpress.tar && rm wordpress.tar
+
+# Setting ENV VARIABLE
+ENV AUTOINDEX on
+RUN envsubst '${AUTOINDEX}' < /etc/nginx/sites-enabled/default
 
 #lauching services
 ENTRYPOINT nginx -t && service nginx start && service mysql start && service php7.3-fpm start && bash
