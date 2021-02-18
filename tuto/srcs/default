@@ -17,7 +17,7 @@
 
     root /var/www/html;
 	location / {
-		autoindex on;
+		autoindex ${AUTOINDEX};
 	}
     index index.html index.htm index.nginx-debian.html index.php;
 
