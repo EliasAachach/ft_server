@@ -48,10 +48,10 @@ COPY ./srcs/wordpress.tar /var/www/html/
 RUN rm -rf /var/www/html/index.nginx-debian.html && cd /var/www/html && tar -xvf wordpress.tar && rm wordpress.tar
 
 # Setting ENV VARIABLE
-ENV AUTOINDEX on
-RUN envsubst '${AUTOINDEX}' < /etc/nginx/sites-enabled/default
+ENV AUTOINDEX off
+RUN envsubst '${AUTOINDEX}' < /etc/nginx/sites-available/default | tee /tmp/default
 
 #lauching services
-ENTRYPOINT nginx -t && service nginx start && service mysql start && service php7.3-fpm start && bash
+ENTRYPOINT cat /tmp/default > /etc/nginx/sites-available/default && service nginx start && service mysql start && service php7.3-fpm start && bash
 
 #logs : phpmyadmin ==> admin:admin wordpress ==> toto:totolandisverygoodcountry
