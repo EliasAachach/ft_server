@@ -47,8 +47,8 @@ RUN service mysql start && mariadb -e "GRANT ALL ON phpmyadmin.* TO 'admin'@'loc
 COPY ./srcs/wordpress.tar /var/www/html/
 RUN rm -rf /var/www/html/index.nginx-debian.html && cd /var/www/html && tar -xvf wordpress.tar && rm wordpress.tar
 
-# Setting ENV VARIABLE
-ENV AUTOINDEX off
+# set up env variable for the nginx autoindex
+ENV AUTOINDEX on
 RUN envsubst '${AUTOINDEX}' < /etc/nginx/sites-available/default | tee /tmp/default
 
 #lauching services
