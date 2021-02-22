@@ -47,11 +47,10 @@ RUN service mysql start && mariadb -e "GRANT ALL ON phpmyadmin.* TO 'admin'@'loc
 COPY ./srcs/wordpress.tar /var/www/html/
 RUN rm -rf /var/www/html/index.nginx-debian.html && cd /var/www/html && tar -xvf wordpress.tar && rm wordpress.tar
 
-# set up env variable for the nginx autoindex
-ENV AUTOINDEX on
-RUN envsubst '${AUTOINDEX}' < /etc/nginx/sites-available/default | tee /tmp/default
-
-#lauching services
-ENTRYPOINT cat /tmp/default > /etc/nginx/sites-available/default && service nginx start && service mysql start && service php7.3-fpm start && bash
+#lauching services & set up env variable for the nginx autoindex
+ENTRYPOINT envsubst '${AUTOINDEX}' < /etc/nginx/sites-available/default | tee /tmp/default && cat /tmp/default > /etc/nginx/sites-available/default && service nginx start && service mysql start && service php7.3-fpm start && /bin/bash
 
 #logs : phpmyadmin ==> admin:admin wordpress ==> toto:totolandisverygoodcountry
+#how to run the container : docker run -e AUTOINDEX=off -p 80:80 -p 443:443 -t -d [container]
+#in order to test the autoindex : docker exec -it [conriander] mkdir /var/www/html/toto
+#   then, go to localhost/
